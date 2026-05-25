@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CFC — ColorFill Clash v1.2</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- SCREEN: Start -->
+  <div id="screen-start" class="screen active">
+    <div class="start-inner">
+      <div class="logo-block">
+        <div class="logo-rainbow">
+          <span style="--c:#e05a5a"></span>
+          <span style="--c:#5ab4e0"></span>
+          <span style="--c:#e0c95a"></span>
+          <span style="--c:#7be05a"></span>
+          <span style="--c:#c45ae0"></span>
+          <span style="--c:#e08e5a"></span>
+        </div>
+        <h1 class="main-logo">CFC</h1>
+        <p class="tagline">ColorFill Clash <span class="version-tag">v1.2</span></p>
+      </div>
+
+      <!-- Tabs -->
+      <div class="setup-tabs">
+        <button class="tab-btn active" data-tab="preset">Preset</button>
+        <button class="tab-btn" data-tab="custom">Custom Grid</button>
+      </div>
+
+      <!-- Preset difficulty -->
+      <div class="tab-content active" id="tab-preset">
+        <p class="label">Choose difficulty</p>
+        <div class="diff-buttons">
+          <button class="diff-btn active" data-diff="easy">Easy</button>
+          <button class="diff-btn" data-diff="medium">Medium</button>
+          <button class="diff-btn" data-diff="hard">Hard</button>
+        </div>
+        <div class="diff-info">
+          <span class="diff-detail active-detail" data-for="easy">10 × 12 grid &nbsp;·&nbsp; 3 powerups</span>
+          <span class="diff-detail" data-for="medium" hidden>16 × 18 grid &nbsp;·&nbsp; 5 powerups</span>
+          <span class="diff-detail" data-for="hard" hidden>22 × 24 grid &nbsp;·&nbsp; 7 powerups</span>
+        </div>
+      </div>
+
+      <!-- Custom grid -->
+      <div class="tab-content" id="tab-custom">
+        <div class="custom-grid-row">
+          <div class="custom-field">
+            <label class="label" for="custom-rows">Rows <span class="range-hint">(5–25)</span></label>
+            <input type="number" id="custom-rows" class="custom-input" min="5" max="25" value="16" />
+          </div>
+          <div class="custom-sep">×</div>
+          <div class="custom-field">
+            <label class="label" for="custom-cols">Cols <span class="range-hint">(5–40)</span></label>
+            <input type="number" id="custom-cols" class="custom-input" min="5" max="40" value="20" />
+          </div>
+          <div class="custom-field">
+            <label class="label" for="custom-pups">Powerups</label>
+            <input type="number" id="custom-pups" class="custom-input" min="0" max="20" value="5" />
+          </div>
+        </div>
+        <p class="custom-note">Max grid: 40 cols × 25 rows</p>
+      </div>
+
+      <!-- Starting corner -->
+      <div class="setup-section">
+        <p class="label">Your starting corner</p>
+        <div class="corner-grid">
+          <button class="corner-btn" data-corner="tl">↖ Top-Left</button>
+          <button class="corner-btn" data-corner="tr">↗ Top-Right</button>
+          <button class="corner-btn active" data-corner="bl">↙ Bottom-Left</button>
+          <button class="corner-btn" data-corner="br">↘ Bottom-Right</button>
+        </div>
+      </div>
+
+      <!-- Timer -->
+      <div class="setup-section">
+        <p class="label">Game timer</p>
+        <div class="timer-buttons">
+          <button class="timer-btn active" data-time="0">None</button>
+          <button class="timer-btn" data-time="300">5 min</button>
+          <button class="timer-btn" data-time="600">10 min</button>
+          <button class="timer-btn" data-time="1200">20 min</button>
+          <button class="timer-btn" data-time="custom">Custom</button>
+        </div>
+        <div class="custom-timer-row hidden" id="custom-timer-row">
+          <input type="number" id="custom-time-input" class="custom-input" min="1" max="999" value="15" placeholder="min" />
+          <span class="label" style="margin:0">minutes</span>
+        </div>
+      </div>
+
+      <button class="btn-primary" id="btn-start">Start Game</button>
+
+      <div class="how-block">
+        <p class="label">How to play</p>
+        <ul>
+          <li>You start at your chosen corner, AI takes the opposite</li>
+          <li>Pick a color to flood-fill and absorb neighboring cells</li>
+          <li>Can't pick the color your opponent just used</li>
+          <li>Discover <strong>⚡ powerups</strong> hidden in the middle — use them strategically</li>
+          <li>Placement powerups let <strong>you choose</strong> where they go on the board</li>
+          <li>Most territory when the board fills (or time runs out) wins!</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN: Placement mode overlay (for targeted powerups) -->
+  <div id="screen-game" class="screen">
+
+    <header class="game-header">
+      <div class="score-block player-score">
+        <div class="score-label">YOU</div>
+        <div class="score-num" id="score-player">0</div>
+      </div>
+      <div class="tug-bar-wrap">
+        <div class="tug-bar">
+          <div class="tug-fill player-fill" id="tug-player"></div>
+          <div class="tug-fill ai-fill" id="tug-ai"></div>
+        </div>
+        <div class="header-bottom-row">
+          <div class="cells-left" id="cells-left">cells left: 0</div>
+          <div class="timer-display hidden" id="timer-display">
+            <span class="timer-icon">⏱</span>
+            <span id="timer-text">--:--</span>
+          </div>
+        </div>
+      </div>
+      <div class="score-block ai-score">
+        <div class="score-label">AI</div>
+        <div class="score-num" id="score-ai">0</div>
+      </div>
+    </header>
+
+    <div class="ingame-controls">
+      <div class="ai-color-row" id="ai-color-row">
+        <span class="ai-row-label">AI picked:</span>
+        <div class="ai-color-swatch" id="ai-last-swatch"></div>
+      </div>
+      <div class="ingame-buttons">
+        <button class="btn-ingame" id="btn-ingame-restart" title="Restart game">↺ Restart</button>
+        <button class="btn-ingame btn-ingame-quit" id="btn-ingame-quit" title="Quit to menu">✕ Quit</button>
+      </div>
+    </div>
+
+    <!-- Placement mode banner -->
+    <div class="placement-banner hidden" id="placement-banner">
+      <span id="placement-banner-text">🎯 Click an empty cell to place your barrier</span>
+      <button class="btn-ingame" id="placement-cancel">Cancel</button>
+    </div>
+
+    <div class="board-wrap">
+      <canvas id="game-canvas"></canvas>
+      <div id="powerup-toast" class="powerup-toast hidden"></div>
+    </div>
+
+    <div class="bottom-panel">
+      <div class="powerup-inventory" id="powerup-inventory">
+        <span class="inv-label">POWERUPS</span>
+        <div class="inv-slots">
+          <div class="inv-slot" id="slot-0" data-slot="0"><span class="slot-empty">—</span></div>
+          <div class="inv-slot" id="slot-1" data-slot="1"><span class="slot-empty">—</span></div>
+        </div>
+      </div>
+      <div class="color-picker" id="color-picker"></div>
+    </div>
+
+    <div class="powerup-panel hidden" id="powerup-panel">
+      <div class="pp-inner">
+        <h3 id="pp-title">Use Powerup?</h3>
+        <p id="pp-desc"></p>
+        <div class="pp-buttons">
+          <button class="btn-secondary" id="pp-cancel">Cancel</button>
+          <button class="btn-primary" id="pp-confirm">Activate ⚡</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- SCREEN: End -->
+  <div id="screen-end" class="screen">
+    <div class="end-inner">
+      <div class="result-emoji" id="result-emoji"></div>
+      <h2 id="result-title"></h2>
+      <p id="result-sub"></p>
+      <div class="final-scores">
+        <div class="fs-block">
+          <span class="fs-label">You</span>
+          <span class="fs-num" id="fs-player"></span>
+        </div>
+        <div class="fs-vs">vs</div>
+        <div class="fs-block">
+          <span class="fs-label">AI</span>
+          <span class="fs-num" id="fs-ai"></span>
+        </div>
+      </div>
+      <button class="btn-primary" id="btn-restart">Play Again</button>
+      <button class="btn-secondary" id="btn-menu">Main Menu</button>
+    </div>
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>
